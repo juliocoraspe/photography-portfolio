@@ -14,41 +14,44 @@ function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Navigate to="/camera" replace />,
-  },
-  {
-    path: '/camera',
-    element: (
-      <Layout>
-        <WireframeCamera />
-      </Layout>
-    ),
-  },
-  {
-    path: '/scanner',
-    element: (
-      <Layout>
-        <WireframeScanner />
-      </Layout>
-    ),
-  },
-  {
-    path: '/sony',
-    element: (
-      <Layout>
-        <WireframeSonyCamera />
-      </Layout>
-    ),
-  },
-  {
-    path: '/drone',
-    element: (
-      <Layout>
-        <WireframeDrone />
-      </Layout>
-    ),
-  },
-]);
+export const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <Navigate to="/camera" replace />,
+    },
+    {
+      path: '/camera',
+      element: (
+        <Layout>
+          <WireframeCamera />
+        </Layout>
+      ),
+    },
+    {
+      path: '/scanner',
+      element: (
+        <Layout>
+          <WireframeScanner />
+        </Layout>
+      ),
+    },
+    {
+      path: '/sony',
+      element: (
+        <Layout>
+          <WireframeSonyCamera />
+        </Layout>
+      ),
+    },
+    {
+      path: '/drone',
+      element: (
+        <Layout>
+          <WireframeDrone />
+        </Layout>
+      ),
+    },
+  ],
+  { basename: import.meta.env.BASE_URL }
+);
