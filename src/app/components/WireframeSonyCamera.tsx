@@ -16,9 +16,15 @@ interface CameraPart {
   lines: [number, number][];
   offsetX: number;
   offsetDirection: number; // -1 for left, 1 for right, 0 for no movement
+  accordionIndex?: number;
+  averageDepth?: number;
 }
 
-export function WireframeSonyCamera() {
+interface WireframeSonyCameraProps {
+  disableScrollAnimationOnMobile?: boolean;
+}
+
+export function WireframeSonyCamera({ disableScrollAnimationOnMobile = false }: WireframeSonyCameraProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -31,17 +37,32 @@ export function WireframeSonyCamera() {
     if (!ctx) return;
 
     // Set canvas size
+    let cameraX = window.innerWidth < 768 ? window.innerWidth * 0.34 : window.innerWidth * 0.26;
+    let cameraY = window.innerHeight < 760 ? window.innerHeight * 0.47 : window.innerHeight * 0.49;
+    let scale = 2.6;
+
+    const isStaticMobileMode = () =>
+      disableScrollAnimationOnMobile && window.innerWidth <= 768;
+
+    const updateViewportParams = () => {
+      const staticMobile = isStaticMobileMode();
+      const baseYFactor = window.innerHeight < 760 ? 0.47 : 0.49;
+      cameraX = staticMobile
+        ? window.innerWidth * 0.5
+        : window.innerWidth < 768
+          ? window.innerWidth * 0.34
+          : window.innerWidth * 0.26;
+      cameraY = window.innerHeight * (staticMobile ? baseYFactor - 0.05 : baseYFactor);
+      scale = staticMobile ? 2.6 * 0.95 : 2.6;
+    };
+
     const updateCanvasSize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      updateViewportParams();
     };
     updateCanvasSize();
     window.addEventListener('resize', updateCanvasSize);
-
-    // Camera position - centered
-    const cameraX = window.innerWidth * 0.5;
-    const cameraY = window.innerHeight * 0.5;
-    const scale = 3;
 
     // Define camera parts based on Sony A7CR
     const createCameraParts = (): CameraPart[] => {
@@ -505,7 +526,19 @@ export function WireframeSonyCamera() {
       ];
     };
 
-    const cameraParts = createCameraParts();
+    const cameraParts = createCameraParts().map((part) => ({
+      ...part,
+      averageDepth: part.points.reduce((sum, point) => sum + point.z, 0) / Math.max(part.points.length, 1),
+    }));
+
+    // Preserve the physical front-to-back order during the accordion.
+    // Rear parts draw first and receive smaller offsets; front elements draw last and get the farthest right placement.
+    const depthSortedParts = [...cameraParts]
+      .sort((a, b) => (a.averageDepth ?? 0) - (b.averageDepth ?? 0))
+      .map((part, index) => ({
+        ...part,
+        accordionIndex: index,
+      }));
 
     // Project 3D point to 2D with rotation
     const project = (point: Point3D, rotationY: number, offsetX: number): Point2D => {
@@ -527,6 +560,24 @@ export function WireframeSonyCamera() {
       };
     };
 
+    // Project with a frozen side-view rotation and screen-space accordion offset
+    const projectAccordion = (point: Point3D, frozenRotationY: number, offsetX: number): Point2D => {
+      const cos = Math.cos(frozenRotationY);
+      const sin = Math.sin(frozenRotationY);
+
+      const x = point.x * cos + point.z * sin;
+      const z = -point.x * sin + point.z * cos;
+      const y = point.y;
+
+      const perspective = 800;
+      const projectedScale = perspective / (perspective + z);
+
+      return {
+        x: cameraX + x * scale * projectedScale + offsetX,
+        y: cameraY + y * scale * projectedScale,
+      };
+    };
+
     // Draw camera
     const draw = () => {
       if (!canvas || !ctx) return;
@@ -534,28 +585,37 @@ export function WireframeSonyCamera() {
       // Calculate scroll progress
       const scrollTop = window.scrollY;
       const scrollHeight = container.scrollHeight - window.innerHeight;
-      const scrollProgress = Math.min(scrollTop / scrollHeight, 1);
+      const scrollProgress = isStaticMobileMode()
+        ? 0
+        : Math.min(scrollTop / Math.max(scrollHeight, 1), 1);
 
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Calculate rotation (0 to 360 degrees)
-      const rotationY = scrollProgress * Math.PI * 2 + Math.PI;
-
-      // Calculate fragmentation (starts at 50% progress, which is 180°)
+      // Rotate 90 degrees to the right, then hold the side view for the accordion
       const fragmentStart = 0.5;
+      const sideViewRotationY = Math.PI / 2;
+      const rotationPhaseProgress = Math.min(scrollProgress / fragmentStart, 1);
+      const rotationY = Math.PI - rotationPhaseProgress * (Math.PI / 2);
+
+      // Accordion fragmentation starts after the 90 degree side view is reached
       const fragmentProgress = Math.max(0, (scrollProgress - fragmentStart) / (1 - fragmentStart));
 
       // Draw each part
-      cameraParts.forEach((part) => {
-        // Calculate offset for fragmentation
-        const fragmentOffset = part.offsetDirection * fragmentProgress * 800;
+      const maxAccordionIndex = Math.max(depthSortedParts.length - 1, 0);
+
+      depthSortedParts.forEach((part) => {
+        const accordionIndex = part.accordionIndex ?? 0;
+        const staggerRank = maxAccordionIndex - accordionIndex;
+        const staggerProgress = Math.max(0, fragmentProgress - staggerRank * 0.006);
+        const normalizedAccordion = Math.min(staggerProgress / 0.964, 1);
+
+        // Progressively larger rightward offsets create the accordion spread
+        const fragmentOffset = normalizedAccordion * (90 + accordionIndex * 18);
         part.offsetX = fragmentOffset;
 
-        // Calculate opacity (fade out during fragmentation)
-        const opacity = 1 - fragmentProgress;
-
-        if (opacity <= 0) return;
+        // Fade to 50% at the end of the accordion
+        const opacity = 1 - fragmentProgress * 0.5;
 
         ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
         ctx.lineWidth = 1.5;
@@ -564,7 +624,9 @@ export function WireframeSonyCamera() {
 
         // Project all points
         const projectedPoints = part.points.map((p) =>
-          project(p, rotationY, fragmentOffset)
+          fragmentProgress > 0
+            ? projectAccordion(p, sideViewRotationY, fragmentOffset)
+            : project(p, rotationY, 0)
         );
 
         // Draw lines
@@ -595,14 +657,18 @@ export function WireframeSonyCamera() {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', updateCanvasSize);
     };
-  }, []);
+  }, [disableScrollAnimationOnMobile]);
 
   return (
-    <div ref={containerRef} style={{ height: '400vh' }} className="relative">
+    <div
+      ref={containerRef}
+      style={{ height: '400vh' }}
+      className={`relative${disableScrollAnimationOnMobile ? ' wireframe-sony--no-mobile-scroll' : ''}`}
+    >
       <canvas
         ref={canvasRef}
         className="fixed top-0 left-0 w-full h-screen"
-        style={{ background: '#000000' }}
+        style={{ background: '#000000', pointerEvents: 'none' }}
       />
     </div>
   );

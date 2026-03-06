@@ -16,6 +16,7 @@ interface CameraPart {
   lines: [number, number][];
   offsetX: number; // For fragmentation
   offsetDirection: number; // -1 for left, 1 for right
+  isRoll?: boolean;
 }
 
 export function WireframeCamera() {
@@ -30,18 +31,24 @@ export function WireframeCamera() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    let cameraX = window.innerWidth * 0.5;
+    let cameraY = window.innerHeight * 0.5;
+    let scale = window.innerWidth < 420 ? 1.45 : window.innerWidth < 768 ? 1.75 : 3;
+
+    const updateViewportParams = () => {
+      cameraX = window.innerWidth * 0.5;
+      cameraY = window.innerHeight * 0.5;
+      scale = window.innerWidth < 420 ? 1.45 : window.innerWidth < 768 ? 1.75 : 3;
+    };
+
     // Set canvas size
     const updateCanvasSize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      updateViewportParams();
     };
     updateCanvasSize();
     window.addEventListener('resize', updateCanvasSize);
-
-    // Camera position - centered vertically, ~60% from left
-    const cameraX = window.innerWidth * 0.5;
-    const cameraY = window.innerHeight * 0.5;
-    const scale = 3;
 
     // Define camera parts based on Canon AE-1 Program front view
     const createCameraParts = (): CameraPart[] => {
@@ -936,7 +943,10 @@ export function WireframeCamera() {
       ];
     };
 
-    const cameraParts = createCameraParts();
+    const cameraParts = createCameraParts().map((part) => ({
+      ...part,
+      isRoll: part.offsetDirection === -1,
+    }));
 
     // Project 3D point to 2D with rotation
     const project = (point: Point3D, rotationY: number, offsetX: number): Point2D => {
@@ -953,10 +963,38 @@ export function WireframeCamera() {
       const projectedScale = perspective / (perspective + z);
 
       return {
-        x: cameraX + (x + offsetX) * scale * projectedScale,
+        x: cameraX - (x + offsetX) * scale * projectedScale,
         y: cameraY + y * scale * projectedScale,
       };
     };
+
+    // Project with a screen-space horizontal offset while preserving a chosen rotation view.
+    const projectWithSeparation = (point: Point3D, rotationViewY: number, screenOffsetX: number): Point2D => {
+      const cos = Math.cos(rotationViewY);
+      const sin = Math.sin(rotationViewY);
+
+      const x = point.x * cos + point.z * sin;
+      const z = -point.x * sin + point.z * cos;
+      const y = point.y;
+
+      const perspective = 800;
+      const projectedScale = perspective / (perspective + z);
+
+      return {
+        x: cameraX - x * scale * projectedScale - screenOffsetX,
+        y: cameraY + y * scale * projectedScale,
+      };
+    };
+
+    const frozenRotationY = Math.PI * 2;
+    const rollParts = cameraParts.filter((part) => part.isRoll);
+    const rollProjectedPoints = rollParts.flatMap((part) =>
+      part.points.map((point) => projectWithSeparation(point, frozenRotationY, 0))
+    );
+    const rollCenterX =
+      rollProjectedPoints.reduce((sum, point) => sum + point.x, 0) /
+      Math.max(rollProjectedPoints.length, 1);
+    const rollRecenteringDistance = Math.max(0, rollCenterX - window.innerWidth * 0.5);
 
     // Draw camera
     const draw = () => {
@@ -964,38 +1002,65 @@ export function WireframeCamera() {
 
       // Calculate scroll progress
       const scrollTop = window.scrollY;
-      const scrollHeight = container.scrollHeight - window.innerHeight;
-      const scrollProgress = Math.min(scrollTop / scrollHeight, 1);
+      const containerTop = container.getBoundingClientRect().top + window.scrollY;
+      const scrollHeight = container.offsetHeight - window.innerHeight;
+      const relativeScroll = scrollTop - containerTop;
+
+      // Delay animation start until div1 is fully settled in viewport.
+      // During this initial segment camera stays static.
+      const startDelayPx = window.innerHeight * 0.22;
+      const effectiveScroll = Math.max(relativeScroll - startDelayPx, 0);
+      const effectiveRange = Math.max(scrollHeight - startDelayPx, 1);
+      const scrollProgress = Math.min(Math.max(effectiveScroll / effectiveRange, 0), 1);
 
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Calculate rotation (0 to 360 degrees)
+      // Only draw while this section is active in viewport
+      if (relativeScroll < 0 || relativeScroll > scrollHeight) return;
+
+      // Keep the existing rotation behavior intact
       const rotationY = scrollProgress * Math.PI * 2 + Math.PI;
 
-      // Calculate fragmentation (starts at 50% progress, which is 180°)
-      const fragmentStart = 0.5;
-      const fragmentProgress = Math.max(0, (scrollProgress - fragmentStart) / (1 - fragmentStart));
+      // Non-roll elements begin exiting before the 180 degree point, overlapping with the tail of the rotation.
+      const rotationComplete = 0.5;
+      const exitStart = 0.42;
+      const exitProgress = Math.max(0, (scrollProgress - exitStart) / (1 - exitStart));
+      const postRotationProgress = Math.max(0, (scrollProgress - rotationComplete) / (1 - rotationComplete));
+      const rollRecenterProgress = Math.min(postRotationProgress / 0.14, 1);
+      const easedRollRecenter = rollRecenterProgress * rollRecenterProgress * (3 - 2 * rollRecenterProgress);
+      const rollFadeStart = 0.82;
+      const rollOpacity =
+        postRotationProgress <= rollFadeStart ? 1 : Math.max(0, 1 - (postRotationProgress - rollFadeStart) / (1 - rollFadeStart));
 
       // Draw each part
       cameraParts.forEach((part) => {
-        // Calculate offset for fragmentation
-        const fragmentOffset = part.offsetDirection * fragmentProgress * 800;
+        const baseExitOffset = exitProgress * 1100;
+        const separationOffset = exitProgress * (part.offsetDirection > 0 ? 120 : 40);
+        const fragmentOffset = part.isRoll
+          ? rollRecenteringDistance * easedRollRecenter
+          : baseExitOffset + separationOffset;
         part.offsetX = fragmentOffset;
 
-        // Calculate opacity (fade out during fragmentation)
-        const opacity = 1 - fragmentProgress;
+        // The roll remains fully visible; everything else fades out by mid-trajectory.
+        const opacity = part.isRoll ? rollOpacity : Math.max(0, 1 - exitProgress * 2);
 
         if (opacity <= 0) return;
 
         ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = part.isRoll ? 1.9 : 1.5;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
 
         // Project all points
         const projectedPoints = part.points.map((p) =>
-          project(p, rotationY, fragmentOffset)
+          part.isRoll
+            ? postRotationProgress > 0
+              ? projectWithSeparation(p, frozenRotationY, fragmentOffset)
+              : project(p, rotationY, 0)
+            : exitProgress > 0
+              ? projectWithSeparation(p, rotationY, fragmentOffset)
+              : project(p, rotationY, 0)
         );
 
         // Draw lines

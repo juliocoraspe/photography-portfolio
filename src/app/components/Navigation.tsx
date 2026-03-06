@@ -4,10 +4,10 @@ export function Navigation() {
   const location = useLocation();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center gap-8 py-6">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center gap-8 py-6" aria-label="Main sections">
       <Link
         to="/camera"
-        className="text-white text-sm tracking-wider uppercase transition-opacity"
+        className="text-white type-micro tracking-wider uppercase transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
         style={{
           opacity: location.pathname === '/camera' ? 1 : 0.5,
           textDecoration: 'none',
@@ -18,7 +18,7 @@ export function Navigation() {
       <span className="text-white" style={{ opacity: 0.3 }}>|</span>
       <Link
         to="/scanner"
-        className="text-white text-sm tracking-wider uppercase transition-opacity"
+        className="text-white type-micro tracking-wider uppercase transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
         style={{
           opacity: location.pathname === '/scanner' ? 1 : 0.5,
           textDecoration: 'none',
@@ -29,7 +29,7 @@ export function Navigation() {
       <span className="text-white" style={{ opacity: 0.3 }}>|</span>
       <Link
         to="/sony"
-        className="text-white text-sm tracking-wider uppercase transition-opacity"
+        className="text-white type-micro tracking-wider uppercase transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
         style={{
           opacity: location.pathname === '/sony' ? 1 : 0.5,
           textDecoration: 'none',
@@ -39,8 +39,19 @@ export function Navigation() {
       </Link>
       <span className="text-white" style={{ opacity: 0.3 }}>|</span>
       <Link
+        to="/film-layers"
+        className="text-white type-micro tracking-wider uppercase transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+        style={{
+          opacity: location.pathname === '/film-layers' ? 1 : 0.5,
+          textDecoration: 'none',
+        }}
+      >
+        Vertical Video
+      </Link>
+      <span className="text-white" style={{ opacity: 0.3 }}>|</span>
+      <Link
         to="/drone"
-        className="text-white text-sm tracking-wider uppercase transition-opacity"
+        className="text-white type-micro tracking-wider uppercase transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
         style={{
           opacity: location.pathname === '/drone' ? 1 : 0.5,
           textDecoration: 'none',

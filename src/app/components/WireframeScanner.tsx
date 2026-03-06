@@ -30,18 +30,24 @@ export function WireframeScanner() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    let scannerX = window.innerWidth * 0.5;
+    let scannerY = window.innerHeight * 0.5;
+    let scale = window.innerWidth < 420 ? 1.35 : window.innerWidth < 768 ? 1.7 : 3;
+
+    const updateViewportParams = () => {
+      scannerX = window.innerWidth * 0.5;
+      scannerY = window.innerHeight * 0.5;
+      scale = window.innerWidth < 420 ? 1.35 : window.innerWidth < 768 ? 1.7 : 3;
+    };
+
     // Set canvas size
     const updateCanvasSize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      updateViewportParams();
     };
     updateCanvasSize();
     window.addEventListener('resize', updateCanvasSize);
-
-    // Scanner position - centered
-    const scannerX = window.innerWidth * 0.5;
-    const scannerY = window.innerHeight * 0.5;
-    const scale = 3;
 
     // Define scanner parts based on Plustek 8300
     const createScannerParts = (): ScannerPart[] => {
@@ -269,17 +275,17 @@ export function WireframeScanner() {
 
         // === FILM HOLDER PARTS (will separate) ===
         
-        // Film holder - main rail (horizontal bar)
+        // Film holder - outer tray
         {
           points: [
-            { x: -150, y: -8, z: -25 },
-            { x: 150, y: -8, z: -25 },
-            { x: 150, y: 8, z: -25 },
-            { x: -150, y: 8, z: -25 },
-            { x: -150, y: -8, z: -32 },
-            { x: 150, y: -8, z: -32 },
-            { x: 150, y: 8, z: -32 },
-            { x: -150, y: 8, z: -32 },
+            { x: -162, y: -14, z: -24 },
+            { x: 162, y: -14, z: -24 },
+            { x: 162, y: 14, z: -24 },
+            { x: -162, y: 14, z: -24 },
+            { x: -162, y: -14, z: -34 },
+            { x: 162, y: -14, z: -34 },
+            { x: 162, y: 14, z: -34 },
+            { x: -162, y: 14, z: -34 },
           ],
           lines: [
             [0, 1], [1, 2], [2, 3], [3, 0],
@@ -289,13 +295,13 @@ export function WireframeScanner() {
           offsetX: 0,
           isFilmHolder: true,
         },
-        // Film holder - top rail
+        // Film holder - inner top rail
         {
           points: [
-            { x: -148, y: -8, z: -32 },
-            { x: 148, y: -8, z: -32 },
-            { x: 148, y: -6, z: -32 },
-            { x: -148, y: -6, z: -32 },
+            { x: -140, y: -10, z: -28 },
+            { x: 140, y: -10, z: -28 },
+            { x: 140, y: -7, z: -28 },
+            { x: -140, y: -7, z: -28 },
           ],
           lines: [
             [0, 1], [1, 2], [2, 3], [3, 0],
@@ -303,13 +309,13 @@ export function WireframeScanner() {
           offsetX: 0,
           isFilmHolder: true,
         },
-        // Film holder - bottom rail
+        // Film holder - inner bottom rail
         {
           points: [
-            { x: -148, y: 6, z: -32 },
-            { x: 148, y: 6, z: -32 },
-            { x: 148, y: 8, z: -32 },
-            { x: -148, y: 8, z: -32 },
+            { x: -140, y: 7, z: -28 },
+            { x: 140, y: 7, z: -28 },
+            { x: 140, y: 10, z: -28 },
+            { x: -140, y: 10, z: -28 },
           ],
           lines: [
             [0, 1], [1, 2], [2, 3], [3, 0],
@@ -317,17 +323,45 @@ export function WireframeScanner() {
           offsetX: 0,
           isFilmHolder: true,
         },
-        // Film holder - left end piece
+        // Film holder - inner aperture border
         {
           points: [
-            { x: -155, y: -12, z: -25 },
-            { x: -145, y: -12, z: -25 },
-            { x: -145, y: 12, z: -25 },
-            { x: -155, y: 12, z: -25 },
-            { x: -155, y: -12, z: -32 },
-            { x: -145, y: -12, z: -32 },
-            { x: -145, y: 12, z: -32 },
-            { x: -155, y: 12, z: -32 },
+            { x: -126, y: -6, z: -26 },
+            { x: 126, y: -6, z: -26 },
+            { x: 126, y: 6, z: -26 },
+            { x: -126, y: 6, z: -26 },
+          ],
+          lines: [
+            [0, 1], [1, 2], [2, 3], [3, 0],
+          ],
+          offsetX: 0,
+          isFilmHolder: true,
+        },
+        // Film holder - recessed channel border
+        {
+          points: [
+            { x: -134, y: -8.5, z: -31 },
+            { x: 134, y: -8.5, z: -31 },
+            { x: 134, y: 8.5, z: -31 },
+            { x: -134, y: 8.5, z: -31 },
+          ],
+          lines: [
+            [0, 1], [1, 2], [2, 3], [3, 0],
+          ],
+          offsetX: 0,
+          isFilmHolder: true,
+        },
+        // Film holder - left end cap
+        {
+          points: [
+            { x: -162, y: -14, z: -24 },
+            { x: -142, y: -14, z: -24 },
+            { x: -142, y: 14, z: -24 },
+            { x: -162, y: 14, z: -24 },
+            { x: -162, y: -14, z: -34 },
+            { x: -142, y: -14, z: -34 },
+            { x: -142, y: 14, z: -34 },
+            { x: -162, y: 14, z: -34 },
           ],
           lines: [
             [0, 1], [1, 2], [2, 3], [3, 0],
@@ -337,17 +371,17 @@ export function WireframeScanner() {
           offsetX: 0,
           isFilmHolder: true,
         },
-        // Film holder - right end piece
+        // Film holder - right end cap
         {
           points: [
-            { x: 145, y: -12, z: -25 },
-            { x: 155, y: -12, z: -25 },
-            { x: 155, y: 12, z: -25 },
-            { x: 145, y: 12, z: -25 },
-            { x: 145, y: -12, z: -32 },
-            { x: 155, y: -12, z: -32 },
-            { x: 155, y: 12, z: -32 },
-            { x: 145, y: 12, z: -32 },
+            { x: 142, y: -14, z: -24 },
+            { x: 162, y: -14, z: -24 },
+            { x: 162, y: 14, z: -24 },
+            { x: 142, y: 14, z: -24 },
+            { x: 142, y: -14, z: -34 },
+            { x: 162, y: -14, z: -34 },
+            { x: 162, y: 14, z: -34 },
+            { x: 142, y: 14, z: -34 },
           ],
           lines: [
             [0, 1], [1, 2], [2, 3], [3, 0],
@@ -357,13 +391,13 @@ export function WireframeScanner() {
           offsetX: 0,
           isFilmHolder: true,
         },
-        // Film frame window (left)
+        // Film holder guide lip (top)
         {
           points: [
-            { x: -140, y: -5, z: -27 },
-            { x: -120, y: -5, z: -27 },
-            { x: -120, y: 5, z: -27 },
-            { x: -140, y: 5, z: -27 },
+            { x: -118, y: -6, z: -25 },
+            { x: 118, y: -6, z: -25 },
+            { x: 118, y: -4.5, z: -25 },
+            { x: -118, y: -4.5, z: -25 },
           ],
           lines: [
             [0, 1], [1, 2], [2, 3], [3, 0],
@@ -371,13 +405,13 @@ export function WireframeScanner() {
           offsetX: 0,
           isFilmHolder: true,
         },
-        // Film frame window (center)
+        // Film holder guide lip (bottom)
         {
           points: [
-            { x: -15, y: -5, z: -27 },
-            { x: 15, y: -5, z: -27 },
-            { x: 15, y: 5, z: -27 },
-            { x: -15, y: 5, z: -27 },
+            { x: -118, y: 4.5, z: -25 },
+            { x: 118, y: 4.5, z: -25 },
+            { x: 118, y: 6, z: -25 },
+            { x: -118, y: 6, z: -25 },
           ],
           lines: [
             [0, 1], [1, 2], [2, 3], [3, 0],
@@ -385,13 +419,50 @@ export function WireframeScanner() {
           offsetX: 0,
           isFilmHolder: true,
         },
-        // Film frame window (right)
+        // Film strip frames inside the carrier
+        ...Array.from({ length: 6 }, (_, index) => {
+          const startX = -106 + index * 40;
+          const endX = startX + 28;
+
+          return {
+            points: [
+              { x: startX, y: -4.8, z: -26.5 },
+              { x: endX, y: -4.8, z: -26.5 },
+              { x: endX, y: 4.8, z: -26.5 },
+              { x: startX, y: 4.8, z: -26.5 },
+            ],
+            lines: [
+              [0, 1], [1, 2], [2, 3], [3, 0],
+            ],
+            offsetX: 0,
+            isFilmHolder: true,
+          };
+        }),
+        // Divider bars between film frames
+        ...Array.from({ length: 5 }, (_, index) => {
+          const x = -72 + index * 40;
+
+          return {
+            points: [
+              { x: x, y: -6, z: -27.5 },
+              { x: x + 4, y: -6, z: -27.5 },
+              { x: x + 4, y: 6, z: -27.5 },
+              { x: x, y: 6, z: -27.5 },
+            ],
+            lines: [
+              [0, 1], [1, 2], [2, 3], [3, 0],
+            ],
+            offsetX: 0,
+            isFilmHolder: true,
+          };
+        }),
+        // Small registration notch detail (left)
         {
           points: [
-            { x: 120, y: -5, z: -27 },
-            { x: 140, y: -5, z: -27 },
-            { x: 140, y: 5, z: -27 },
-            { x: 120, y: 5, z: -27 },
+            { x: -152, y: -6, z: -27.5 },
+            { x: -145, y: -6, z: -27.5 },
+            { x: -145, y: -2, z: -27.5 },
+            { x: -152, y: -2, z: -27.5 },
           ],
           lines: [
             [0, 1], [1, 2], [2, 3], [3, 0],
@@ -399,27 +470,13 @@ export function WireframeScanner() {
           offsetX: 0,
           isFilmHolder: true,
         },
-        // Film holder grip detail (left)
+        // Small latch detail (right)
         {
           points: [
-            { x: -152, y: -10, z: -28 },
-            { x: -148, y: -10, z: -28 },
-            { x: -148, y: 10, z: -28 },
-            { x: -152, y: 10, z: -28 },
-          ],
-          lines: [
-            [0, 1], [1, 2], [2, 3], [3, 0],
-          ],
-          offsetX: 0,
-          isFilmHolder: true,
-        },
-        // Film holder grip detail (right)
-        {
-          points: [
-            { x: 148, y: -10, z: -28 },
-            { x: 152, y: -10, z: -28 },
-            { x: 152, y: 10, z: -28 },
-            { x: 148, y: 10, z: -28 },
+            { x: 145, y: 2, z: -27.5 },
+            { x: 154, y: 2, z: -27.5 },
+            { x: 154, y: 8, z: -27.5 },
+            { x: 145, y: 8, z: -27.5 },
           ],
           lines: [
             [0, 1], [1, 2], [2, 3], [3, 0],
@@ -447,7 +504,7 @@ export function WireframeScanner() {
       const projectedScale = perspective / (perspective + z);
 
       return {
-        x: scannerX + (x + offsetX) * scale * projectedScale,
+        x: scannerX - (x + offsetX) * scale * projectedScale,
         y: scannerY + y * scale * projectedScale,
       };
     };
@@ -468,7 +525,7 @@ export function WireframeScanner() {
 
       // Apply horizontal offset directly in screen space
       return {
-        x: scannerX + x * scale * projectedScale + offsetX,
+        x: scannerX - x * scale * projectedScale - offsetX,
         y: scannerY + y * scale * projectedScale,
       };
     };
@@ -477,20 +534,36 @@ export function WireframeScanner() {
     const draw = () => {
       if (!canvas || !ctx) return;
 
-      // Calculate scroll progress
+      // Calculate scroll progress relative to this section's position
       const scrollTop = window.scrollY;
-      const scrollHeight = container.scrollHeight - window.innerHeight;
-      const scrollProgress = Math.min(scrollTop / scrollHeight, 1);
+      const containerTop = container.getBoundingClientRect().top + window.scrollY;
+      const scrollHeight = container.offsetHeight - window.innerHeight;
+      const relativeScroll = scrollTop - containerTop;
+      const scrollProgress = Math.min(Math.max(relativeScroll / scrollHeight, 0), 1);
+
+      // Timeline phases:
+      // 1) motion (scanner animation runs)
+      // 2) hold (final pose stays visible while still scrolling)
+      // 3) fade (scanner fades out near end of section)
+      const MOTION_END = 0.7;
+      const HOLD_END = 0.88;
+      const motionProgress = Math.min(scrollProgress / MOTION_END, 1);
+      const fadeProgress =
+        scrollProgress <= HOLD_END ? 0 : Math.min((scrollProgress - HOLD_END) / (1 - HOLD_END), 1);
+      const animationProgress = 1 - motionProgress;
 
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Don't draw when scrolled above this section
+      if (relativeScroll < 0 || relativeScroll > scrollHeight) return;
+
       // Calculate rotation (0 to 360 degrees)
-      const rotationY = scrollProgress * Math.PI * 2 + Math.PI;
+      const rotationY = animationProgress * Math.PI * 2 + Math.PI;
 
       // Calculate separation (starts at 50% progress, which is 180°)
       const separationStart = 0.5;
-      const separationProgress = Math.max(0, (scrollProgress - separationStart) / (1 - separationStart));
+      const separationProgress = Math.max(0, (animationProgress - separationStart) / (1 - separationStart));
 
       // Freeze rotation angle at 180 degrees for separation phase
       const frozenRotationY = separationStart * Math.PI * 2 + Math.PI;
@@ -501,16 +574,24 @@ export function WireframeScanner() {
         let opacity = 1;
 
         if (separationProgress > 0) {
-          // During separation phase
+          // During separation phase (assembling in)
           if (part.isFilmHolder) {
             // Film holder shoots out horizontally to the right
             offset = separationProgress * 1200;
-            opacity = 1 - separationProgress;
+            opacity = 1;
           } else {
             // Scanner body moves to the left
             offset = -separationProgress * 800;
-            opacity = 1 - separationProgress;
+            opacity = 1;
           }
+        } else {
+          // Keep full visibility through motion + hold.
+          opacity = 1;
+        }
+
+        // Final dedicated fade after hold.
+        if (fadeProgress > 0) {
+          opacity *= 1 - Math.pow(fadeProgress, 0.8);
         }
 
         if (opacity <= 0) return;
@@ -562,11 +643,10 @@ export function WireframeScanner() {
   }, []);
 
   return (
-    <div ref={containerRef} style={{ height: '400vh' }} className="relative">
+    <div ref={containerRef} style={{ height: '360vh' }} className="relative">
       <canvas
         ref={canvasRef}
         className="fixed top-0 left-0 w-full h-screen"
-        style={{ background: '#000000' }}
       />
     </div>
   );

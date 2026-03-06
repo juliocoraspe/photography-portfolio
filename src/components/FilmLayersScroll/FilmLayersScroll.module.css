@@ -1,0 +1,205 @@
+.section {
+  --pin-duration: 320vh;
+  position: relative;
+  min-height: var(--pin-duration);
+  background: #000;
+}
+
+.stickyFrame {
+  position: sticky;
+  top: 0;
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  padding-top: clamp(80px, 12vh, 140px);
+}
+
+.scene {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+  background: #000;
+}
+
+.cardStage {
+  position: relative;
+  width: min(92vw, 1320px);
+  height: min(76vh, 760px);
+}
+
+@media (max-width: 768px) {
+  .stickyFrame {
+    padding-top: clamp(140px, 24vh, 280px);
+  }
+
+  .cardStage {
+    transform: translateY(-220px);
+  }
+}
+
+.cardOuter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  aspect-ratio: 9 / 16;
+  transform-origin: 50% 50%;
+  transform: translate3d(0, 0, 0) rotateY(0deg) rotateZ(0deg) scale3d(1, 1, 1);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+.cardRect,
+.cardImg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  transform-style: preserve-3d;
+}
+
+.cardRect {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), var(--card-tint));
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.36);
+}
+
+.cardImg {
+  object-fit: cover;
+  opacity: 0.72;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (max-width: 1023px) {
+  .cardStage {
+    width: min(96vw, 980px);
+  }
+}
+
+/* Pointer line — grows downward from card bottom on reveal */
+.pointerLine {
+  position: absolute;
+  left: calc(50% - 0.5px);
+  top: 100%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.42);
+  transform-origin: top center;
+  pointer-events: none;
+}
+
+/* Arrowhead tip at the bottom of the pointer line */
+.pointerTip {
+  position: absolute;
+  bottom: -5px;
+  left: calc(50% - 3px);
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 5px solid rgba(255, 255, 255, 0.42);
+  pointer-events: none;
+}
+
+/* Card label — appears below the pointer line on reveal */
+.cardLabel {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 36px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(210, 218, 232, 0.78);
+  pointer-events: none;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .cardLabel {
+    width: calc(100% - 6px);
+    max-width: calc(100% - 6px);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    text-align: center;
+    line-height: 1.25;
+  }
+}
+
+/* Modal backdrop */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+
+/* Modal container */
+.modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 52px 32px 36px;
+}
+
+/* Close button — top-right X */
+.modalClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 150ms;
+}
+
+.modalClose:hover {
+  color: #fff;
+}
+
+/* Modal card display */
+.modalCardWrapper {
+  position: relative;
+  flex-shrink: 0;
+  height: min(68vh, 480px);
+  aspect-ratio: 9 / 16;
+}
+
+/* Label below modal card */
+.modalLabel {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(220, 226, 238, 0.82);
+  margin: 0;
+}

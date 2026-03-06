@@ -1,0 +1,448 @@
+.screen {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+.copy {
+  position: fixed;
+  top: clamp(96px, 12vh, 132px);
+  left: clamp(18px, 5.2vw, 78px);
+  z-index: 22;
+  width: min(44vw, 760px);
+  color: rgba(238, 241, 247, 0.94);
+  pointer-events: none;
+}
+
+.label {
+  margin: 0 0 10px;
+  color: rgba(203, 209, 219, 0.72);
+}
+
+.title {
+  margin: 0 0 10px;
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 56ch;
+  color: rgba(226, 230, 237, 0.88);
+}
+
+.centerStage {
+  position: fixed;
+  z-index: 16;
+  left: 0;
+  right: 0;
+  top: clamp(176px, 23vh, 232px);
+  bottom: clamp(187px, 25vh, 278px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.cardsRow {
+  width: min(92vw, 1615px);
+  height: 100%;
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.videoCard {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 160px;
+  max-width: 342px;
+  height: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)),
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 58%),
+    #060606;
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  animation: bootCard 940ms cubic-bezier(0.2, 0.75, 0.15, 1) forwards;
+  animation-delay: calc(520ms + var(--card-delay));
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.videoCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.12) 0,
+    rgba(255, 255, 255, 0.12) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  opacity: 0.34;
+  mix-blend-mode: screen;
+  animation:
+    flickerOverlay 940ms steps(1, end) forwards,
+    scanDrift 220ms linear infinite;
+  animation-delay: calc(520ms + var(--card-delay));
+  pointer-events: none;
+}
+
+.videoCard::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.16) 0.65px, transparent 0.75px);
+  background-size: 3px 3px;
+  opacity: 0.26;
+  transform: translateY(0);
+  animation:
+    noiseSettle 980ms steps(10, end) forwards,
+    noiseDrift 120ms steps(2, end) infinite;
+  animation-delay: calc(520ms + var(--card-delay));
+  pointer-events: none;
+}
+
+.cardVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cardControls {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+  z-index: 2;
+}
+
+.cardControls.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cardPlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+.cardFullscreen {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+.cardContent {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+}
+
+.clipLabel {
+  margin: 12px 12px 0;
+  color: rgba(239, 243, 250, 0.8);
+}
+
+.cardMeta {
+  margin-top: auto;
+  padding: 10px 10px 9px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.metaAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: rgba(238, 243, 249, 0.86);
+  cursor: pointer;
+}
+
+.metaAction svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.specPanel {
+  position: fixed;
+  z-index: 20;
+  left: 50%;
+  bottom: clamp(22px, 3.4vh, 48px);
+  transform: translateX(-50%);
+  width: min(94vw, 1380px);
+  background: rgba(255, 255, 255, 0.03);
+  pointer-events: none;
+}
+
+.specGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 0;
+}
+
+.specGrid .specList:first-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.specList {
+  list-style: none;
+  margin: 0;
+  padding: 0 20px;
+  display: grid;
+  gap: 0;
+}
+
+.specItem {
+  margin: 0;
+  padding: 11px 0 11px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(214, 220, 231, 0.9);
+}
+
+.specItem:first-child {
+  border-top: none;
+}
+
+@keyframes bootCard {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+    filter: brightness(1.35) contrast(0.72);
+  }
+  12% {
+    opacity: 0.3;
+    transform: translate3d(0, -3px, 0);
+  }
+  22% {
+    opacity: 0.88;
+    transform: translate3d(0, 2px, 0);
+  }
+  34% {
+    opacity: 0.42;
+    transform: translate3d(0, -1px, 0);
+  }
+  55% {
+    opacity: 0.92;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: brightness(1) contrast(1);
+  }
+}
+
+@keyframes flickerOverlay {
+  0% {
+    opacity: 0.38;
+  }
+  20% {
+    opacity: 0.12;
+  }
+  27% {
+    opacity: 0.34;
+  }
+  52% {
+    opacity: 0.08;
+  }
+  100% {
+    opacity: 0.06;
+  }
+}
+
+@keyframes scanDrift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 5px;
+  }
+}
+
+@keyframes noiseSettle {
+  0% {
+    opacity: 0.24;
+  }
+  60% {
+    opacity: 0.18;
+  }
+  100% {
+    opacity: 0.1;
+  }
+}
+
+@keyframes noiseDrift {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(1px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1180px) {
+  .copy {
+    width: min(62vw, 760px);
+  }
+
+  .centerStage {
+    top: clamp(150px, 19vh, 200px);
+    bottom: clamp(190px, 26vh, 270px);
+  }
+
+  .cardsRow {
+    gap: 16px;
+  }
+
+  .videoCard {
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 900px) {
+  .screen {
+    overflow: visible;
+    min-height: auto;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 56px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  }
+
+  .copy {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: calc(100vw - 28px);
+    margin: 0 auto 10px;
+  }
+
+  .centerStage {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    display: block;
+    margin: 44px auto 10px;
+    padding: 0 8px;
+  }
+
+  .cardsRow {
+    width: min(98vw, 980px);
+    height: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .videoCard {
+    min-width: 0;
+    max-width: none;
+    aspect-ratio: 9 / 16;
+    height: auto;
+  }
+
+  .specPanel {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    transform: none;
+    width: calc(100vw - 28px);
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .copy {
+    top: 18px;
+    left: auto;
+    width: calc(100vw - 16px);
+    margin: 0 auto 8px;
+  }
+
+  /* 2×2 card grid */
+  .centerStage {
+    top: auto;
+    bottom: auto;
+    margin: 56px auto 8px;
+    padding: 0 4px;
+  }
+
+  .cardsRow {
+    width: calc(100vw - 8px);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .videoCard {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+  }
+
+  /* Spec panel: single column */
+  .specPanel {
+    width: calc(100vw - 12px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+  }
+
+  .specGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .specGrid .specList:first-child {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .specList {
+    padding: 0 10px;
+  }
+}
