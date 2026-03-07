@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import drone1 from "../../images/drone1.mov";
+import vid22 from "../../images/vid 2.2.mov";
+import vid32 from "../../images/vid 3.2.mov";
 
 const DRONE_VIDEOS = [
-  'https://res.cloudinary.com/dvu2fedzf/video/upload/v1772844313/drone_xpr2np.mov',
-  'https://res.cloudinary.com/dvu2fedzf/video/upload/v1772844350/vid_2_lhpqfk.mov',
-  'https://res.cloudinary.com/dvu2fedzf/video/upload/v1772844371/vid_3_ryo0zy.mov',
-] as const;
+  drone1,
+  vid22,
+  vid32,
+] as unknown as string[];
 
 function DroneVideoCard({
   src, cardClass, videoRef, isPlaying, onPlay,
