@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
 const DRONE_VIDEOS = [
-  "/photography-portfolio/videos/drone.mov",
-  "/photography-portfolio/videos/vid 2.mov",
-  "/photography-portfolio/videos/vid 3.mov",
+  'https://res.cloudinary.com/dvu2fedzf/video/upload/v1772844313/drone_xpr2np.mov',
+  'https://res.cloudinary.com/dvu2fedzf/video/upload/v1772844350/vid_2_lhpqfk.mov',
+  'https://res.cloudinary.com/dvu2fedzf/video/upload/v1772844371/vid_3_ryo0zy.mov',
 ] as const;
 
 function DroneVideoCard({
