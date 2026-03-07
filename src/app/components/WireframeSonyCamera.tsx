@@ -53,7 +53,9 @@ export function WireframeSonyCamera({ disableScrollAnimationOnMobile = false }: 
           ? window.innerWidth * 0.34
           : window.innerWidth * 0.26;
       cameraY = window.innerHeight * (staticMobile ? baseYFactor - 0.05 : baseYFactor);
-      scale = staticMobile ? 2.6 * 0.95 : 2.6;
+      // Mobile About mode: keep same position, but render 10% smaller
+      // so it is fully visible immediately without requiring scroll.
+      scale = staticMobile ? 2.6 * 0.7695 : 2.6;
     };
 
     const updateCanvasSize = () => {

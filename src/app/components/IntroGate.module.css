@@ -72,11 +72,12 @@
 
 /* ── Title area ────────────────────────────────────────────────── */
 .titleArea {
+  --intro-copy-inline: clamp(18px, 5.2vw, 78px);
   position: relative;
   z-index: 2;
-  width: calc(100vw - clamp(42px, 6vw, 92px));
-  margin-left: clamp(28px, 4vw, 64px);
-  margin-right: clamp(14px, 2vw, 28px);
+  width: calc(100vw - (var(--intro-copy-inline) * 2));
+  margin-left: var(--intro-copy-inline);
+  margin-right: var(--intro-copy-inline);
   padding: 0;
   margin-bottom: clamp(14px, 2vh, 26px);
   align-self: flex-start;
@@ -84,23 +85,23 @@
 
 .gateTitle {
   color: rgba(245, 248, 255, 0.96);
-  margin: 0 0 clamp(10px, 1.4vh, 18px);
+  margin: 0 0 10px;
 }
 
 .gateSubtitle {
   color: rgba(198, 206, 218, 0.84);
-  margin: 0 0 clamp(12px, 1.6vh, 20px);
+  margin: 0 0 10px;
   max-width: none;
 }
 
 .gateBody {
   color: rgba(198, 206, 218, 0.72);
-  margin: 0 0 clamp(8px, 1vh, 14px);
+  margin: 0;
   max-width: none;
 }
 
-.gateBody:last-child {
-  margin-bottom: 0;
+.gateBody + .gateBody {
+  margin-top: 12px;
 }
 
 /* ── Bento wrapper (corners anchor here, outside the grid) ──────── */
@@ -346,8 +347,8 @@
   }
 
   .lightboxClose {
-    top: calc(env(safe-area-inset-top, 0px) + 48px);
-    right: 16px;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+    right: 10px;
     width: 44px;
     height: 44px;
     font-size: 22px;
