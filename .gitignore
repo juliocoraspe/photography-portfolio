@@ -1,7 +1,2 @@
 node_modules
 dist/
-dist/
-src/images/*.mov
-src/images/*.MOV
-src/images/*.mp4
-src/images/*.MP4

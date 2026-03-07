@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import styles from './VerticalVideoScreen.module.css';
-import vid1 from '../../images/copy_0DB074FA-5E0B-4F53-96F2-E53B443AF1AA.MOV';
-import vid2 from '../../images/copy_742D7BC1-C1B3-490B-8E20-F5263C6C33B8.MOV';
-import vid3 from '../../images/4119F723-5AD2-49B5-B998-D7B2EB31FC0B.mov';
-import vid4 from '../../images/6FC18A4A-0A13-4352-9896-6E4434A581E4.MP4';
 
-const CLIP_VIDEOS = [vid1, vid2, vid3, vid4] as unknown as string[];
+const CLIP_VIDEOS = [
+  '/photography-portfolio/videos/copy_0DB074FA-5E0B-4F53-96F2-E53B443AF1AA.MOV',
+  '/photography-portfolio/videos/copy_742D7BC1-C1B3-490B-8E20-F5263C6C33B8.MOV',
+  '/photography-portfolio/videos/4119F723-5AD2-49B5-B998-D7B2EB31FC0B.mov',
+  '/photography-portfolio/videos/6FC18A4A-0A13-4352-9896-6E4434A581E4.MP4',
+] as const;
 
 const specItems = [
   'Short-form storytelling — Narrative structuring optimized for high-retention vertical video.',
@@ -171,4 +172,3 @@ export function VerticalVideoScreen() {
     </section>
   );
 }
-

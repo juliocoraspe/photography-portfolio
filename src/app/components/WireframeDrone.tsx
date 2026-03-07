@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import vid2 from "../../images/vid 2.mov";
-import vid3 from "../../images/vid 3.mov";
-import droneVid from "../../images/drone.mov";
 
-const DRONE_VIDEOS = [vid2, vid3, droneVid] as unknown as string[];
+const DRONE_VIDEOS = [
+  "/photography-portfolio/videos/drone.mov",
+  "/photography-portfolio/videos/vid 2.mov",
+  "/photography-portfolio/videos/vid 3.mov",
+] as const;
 
 function DroneVideoCard({
   src, cardClass, videoRef, isPlaying, onPlay,
