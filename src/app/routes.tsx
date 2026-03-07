@@ -138,8 +138,17 @@ export const router = createBrowserRouter(
       element: (
         <Layout>
           <div className="sony-home-stage sony-home-stage--about">
+            <div className="about-title-section">
+              <h1 className="type-hero about-title-section__name">Julio Coraspe</h1>
+              <span className="about-title-section__rule" aria-hidden="true" />
+            </div>
             <WireframeSonyCamera disableScrollAnimationOnMobile />
-            <SectionOverlay home noFade />
+            <div className="about-bio-section">
+              <p className="type-body about-bio-section__line">Born in Venezuela, where I graduated as a lawyer, I recently earned my certification as a UX/UI designer and front-end developer.</p>
+              <p className="type-body about-bio-section__line">Photography has always been one of my core passions. My work spans digital photography and analog film: from capture to developing, scanning, editing, and post-processing. I also work with drone videography and vertical video production for social media.</p>
+              <p className="type-body about-bio-section__line">I use tools such as Photoshop, Lightroom, Adobe Fresco, and Feather for digital drawing and 3D sketching, alongside strong experience working with code, generative workflows, and AI through prompt and content engineering.</p>
+              <p className="type-body about-bio-section__line">My visual philosophy blends opposites: the mechanical, manual, and analog with the minimalist, modern, and futuristic. This approach allows me to move across technologies and mediums, combining traditional craftsmanship with emerging tools to create a distinctive visual language.</p>
+            </div>
             <div className="about-contact-section">
               <p className="about-contact-section__title">Contact</p>
               <nav className="about-contact" aria-label="Contact">
@@ -176,14 +185,16 @@ export const router = createBrowserRouter(
       path: '/drone',
       element: (
         <Layout>
-          <WireframeDrone />
-          <SectionOverlay
-            sectionTitle="Drone Videography"
-            subtitle="Aerial cinematography focused on trajectory, altitude, and spatial storytelling."
-            body="Drone videography is my way of exploring perspective—pulling back from the scene to reveal new scale, rhythm, and context. I shoot with a DJI FPV, then refine the footage through editing and color grading to shape the final tone."
-            bodyBottomCenter
-            className="scene-overlay--drone"
-          />
+          <div className="drone-page-layout">
+            <WireframeDrone />
+            <SectionOverlay
+              sectionTitle="Drone Videography"
+              subtitle="Aerial cinematography focused on trajectory, altitude, and spatial storytelling."
+              body="Drone videography is my way of exploring perspective—pulling back from the scene to reveal new scale, rhythm, and context. I shoot with a DJI FPV, then refine the footage through editing and color grading to shape the final tone."
+              bodyBottomCenter
+              className="scene-overlay--drone"
+            />
+          </div>
         </Layout>
       ),
     },
