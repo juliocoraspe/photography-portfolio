@@ -10,19 +10,22 @@ const DRONE_VIDEOS = [
 ] as unknown as string[];
 
 function DroneVideoCard({
-  src, cardClass, videoRef, isPlaying, onPlay,
+  src, cardClass, videoRef, isPlaying, onPlay, onOpenMobileFullscreen,
 }: {
   src: string;
   cardClass: string;
   videoRef: React.RefObject<HTMLVideoElement>;
   isPlaying: boolean;
   onPlay: () => void;
+  onOpenMobileFullscreen: (videoEl: HTMLVideoElement | null, src: string) => void;
 }) {
   const [ctrlVisible, setCtrlVisible] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 1024px)").matches;
 
   const showControls = () => {
     setCtrlVisible(true);
+    if (isMobile) return;
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => setCtrlVisible(false), 2000);
   };
@@ -39,15 +42,45 @@ function DroneVideoCard({
   };
 
   const openFullscreen = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     const v = videoRef.current;
-    if (v?.requestFullscreen) v.requestFullscreen();
+    if (!v) return;
+    const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 1024px)").matches;
+    if (isMobile) {
+      onOpenMobileFullscreen(v, src);
+      return;
+    }
+
+    const anyVideo = v as HTMLVideoElement & {
+      webkitEnterFullscreen?: () => void;
+      webkitEnterFullScreen?: () => void;
+    };
+
+    if (v.requestFullscreen) {
+      v.requestFullscreen().catch(() => {
+        if (typeof anyVideo.webkitEnterFullscreen === "function") {
+          anyVideo.webkitEnterFullscreen();
+        } else if (typeof anyVideo.webkitEnterFullScreen === "function") {
+          anyVideo.webkitEnterFullScreen();
+        }
+      });
+      return;
+    }
+
+    if (typeof anyVideo.webkitEnterFullscreen === "function") {
+      anyVideo.webkitEnterFullscreen();
+      return;
+    }
+    if (typeof anyVideo.webkitEnterFullScreen === "function") {
+      anyVideo.webkitEnterFullScreen();
+    }
   };
 
   return (
     <div className={`drone-video-card ${cardClass}`} onClick={showControls}>
       <video ref={videoRef} className="drone-card-video" src={src} loop playsInline />
-      <div className={`drone-card-controls${ctrlVisible ? " is-visible" : ""}`}>
+      <div className={`drone-card-controls${ctrlVisible || isMobile ? " is-visible" : ""}`}>
         <button className="drone-card-play" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}>
           {isPlaying ? (
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="3.5" height="12" rx="1" fill="white"/><rect x="9.5" y="2" width="3.5" height="12" rx="1" fill="white"/></svg>
@@ -99,6 +132,12 @@ export function WireframeDrone() {
   const cardsFiredRef = useRef(false);
   const [cardsVisible, setCardsVisible] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+  const [mobileFullscreen, setMobileFullscreen] = useState<{
+    src: string;
+    rotation: number;
+    startTime: number;
+  } | null>(null);
+  const fullscreenVideoRef = useRef<HTMLVideoElement>(null);
   const videoRefs = [
     useRef<HTMLVideoElement>(null),
     useRef<HTMLVideoElement>(null),
@@ -252,6 +291,49 @@ export function WireframeDrone() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!mobileFullscreen) return;
+    const anyScreen = screen as Screen & {
+      orientation?: {
+        lock?: (orientation: string) => Promise<void>;
+        unlock?: () => void;
+      };
+    };
+    const lock = anyScreen.orientation?.lock;
+    if (typeof lock === "function") {
+      lock("landscape").catch(() => {
+        lock("landscape-primary").catch(() => undefined);
+      });
+    }
+    return () => {
+      const unlock = anyScreen.orientation?.unlock;
+      if (typeof unlock === "function") unlock.call(anyScreen.orientation);
+    };
+  }, [mobileFullscreen]);
+
+  const openMobileFullscreen = (videoEl: HTMLVideoElement | null, src: string) => {
+    if (videoEl) videoEl.pause();
+    setPlayingIndex(null);
+    setMobileFullscreen({
+      src,
+      rotation: 0,
+      startTime: videoEl?.currentTime ?? 0,
+    });
+  };
+
+  const closeMobileFullscreen = () => {
+    const v = fullscreenVideoRef.current;
+    if (v) v.pause();
+    setMobileFullscreen(null);
+  };
+
+  const rotateFullscreenVideo = () => {
+    setMobileFullscreen((prev) => {
+      if (!prev) return prev;
+      return { ...prev, rotation: (prev.rotation + 90) % 360 };
+    });
+  };
+
   return (
     <div style={{ height: "100vh" }} className="relative wireframe-drone-stage">
       <canvas
@@ -269,6 +351,7 @@ export function WireframeDrone() {
               cardClass={`drone-video-card--${i + 1}`}
               videoRef={videoRefs[i]}
               isPlaying={playingIndex === i}
+              onOpenMobileFullscreen={openMobileFullscreen}
               onPlay={() => {
                 const v = videoRefs[i].current;
                 if (!v) return;
@@ -286,6 +369,56 @@ export function WireframeDrone() {
           ))}
         </div>
       </div>
+      {mobileFullscreen && (
+        <div
+          className="drone-mobile-fullscreen"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Drone fullscreen video"
+          onClick={closeMobileFullscreen}
+        >
+          <button
+            type="button"
+            className="drone-mobile-fullscreen__rotate"
+            onClick={(e) => {
+              e.stopPropagation();
+              rotateFullscreenVideo();
+            }}
+            aria-label="Rotate video 90 degrees"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <polyline points="23 4 23 10 17 10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M20.49 15A9 9 0 1 1 23 10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="drone-mobile-fullscreen__close"
+            onClick={(e) => {
+              e.stopPropagation();
+              closeMobileFullscreen();
+            }}
+            aria-label="Close fullscreen video"
+          >
+            ✕
+          </button>
+          <div className="drone-mobile-fullscreen__viewport" onClick={(e) => e.stopPropagation()}>
+            <video
+              ref={fullscreenVideoRef}
+              className={`drone-mobile-fullscreen__video${mobileFullscreen.rotation % 180 !== 0 ? " drone-mobile-fullscreen__video--vertical" : ""}`}
+              src={mobileFullscreen.src}
+              controls
+              autoPlay
+              loop
+              playsInline
+              style={{ transform: `rotate(${mobileFullscreen.rotation}deg)` }}
+              onLoadedMetadata={(e) => {
+                e.currentTarget.currentTime = mobileFullscreen.startTime;
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

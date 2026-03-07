@@ -79,9 +79,31 @@ function VerticalVideoCard({
   };
 
   const openFullscreen = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     const v = videoRef.current;
-    if (v?.requestFullscreen) v.requestFullscreen();
+    if (!v) return;
+
+    const anyVideo = v as HTMLVideoElement & {
+      webkitEnterFullscreen?: () => void;
+      webkitEnterFullScreen?: () => void;
+    };
+
+    if (v.requestFullscreen) {
+      v.requestFullscreen().catch(() => {
+        if (typeof anyVideo.webkitEnterFullscreen === 'function') anyVideo.webkitEnterFullscreen();
+        else if (typeof anyVideo.webkitEnterFullScreen === 'function') anyVideo.webkitEnterFullScreen();
+      });
+      return;
+    }
+
+    if (typeof anyVideo.webkitEnterFullscreen === 'function') {
+      anyVideo.webkitEnterFullscreen();
+      return;
+    }
+    if (typeof anyVideo.webkitEnterFullScreen === 'function') {
+      anyVideo.webkitEnterFullScreen();
+    }
   };
 
   return (

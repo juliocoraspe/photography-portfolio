@@ -105,8 +105,28 @@ export function IntroGate() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const stopEvent = (
+    e: React.MouseEvent<HTMLElement> | React.PointerEvent<HTMLElement>
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const swallowPointer = (e: React.PointerEvent<HTMLElement>) => {
+    e.stopPropagation();
+  };
+
+  const closeLightbox = (
+    e?: React.MouseEvent<HTMLElement> | React.PointerEvent<HTMLElement>
+  ) => {
+    if (e) {
+      stopEvent(e);
+    }
+    setActiveImg(null);
+  };
+
   return (
-    <section className={styles.gate}>
+    <section className={`${styles.gate} ${activeImg ? styles.gateModalOpen : ''}`}>
       <DottedGrid />
 
       <div className={styles.titleArea}>
@@ -141,9 +161,28 @@ export function IntroGate() {
       </p>
 
       {activeImg && (
-        <div className={styles.lightbox} onClick={() => setActiveImg(null)}>
-          <button className={styles.lightboxClose} onClick={() => setActiveImg(null)} aria-label="Close">✕</button>
-          <img src={activeImg} alt="" className={styles.lightboxImg} onClick={(e) => e.stopPropagation()} draggable={false} />
+        <div
+          className={styles.lightbox}
+          onPointerDown={swallowPointer}
+          onClick={closeLightbox}
+        >
+          <button
+            type="button"
+            className={styles.lightboxClose}
+            onPointerDown={swallowPointer}
+            onClick={closeLightbox}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+          <img
+            src={activeImg}
+            alt=""
+            className={styles.lightboxImg}
+            onPointerDown={swallowPointer}
+            onClick={stopEvent}
+            draggable={false}
+          />
         </div>
       )}
     </section>

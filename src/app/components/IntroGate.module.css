@@ -14,6 +14,10 @@
   overflow: hidden;
 }
 
+.gateModalOpen {
+  z-index: 120;
+}
+
 .gateExiting {
   opacity: 0;
   pointer-events: none;
@@ -207,9 +211,9 @@
 
 /* ── Lightbox ──────────────────────────────────────────────────── */
 .lightbox {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: 200;
   background: rgba(0, 0, 0, 0.92);
   display: flex;
   align-items: center;
@@ -318,8 +322,9 @@
     margin-bottom: 16px;
   }
 
+  /* Squarer cards: height matches approx card width in 2-col grid */
   .bento {
-    grid-auto-rows: minmax(108px, 30vw);
+    grid-auto-rows: minmax(140px, calc(50vw - 14px));
   }
 
   .card {
@@ -329,6 +334,24 @@
   }
 
   .cta { margin-top: 14px; }
+
+  /* Lightbox: image higher, close button reachable */
+  .lightbox {
+    align-items: flex-start;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 80px);
+  }
+
+  .lightboxImg {
+    max-height: 72vh;
+  }
+
+  .lightboxClose {
+    top: calc(env(safe-area-inset-top, 0px) + 48px);
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
 }
 
 @media (max-width: 420px) {
